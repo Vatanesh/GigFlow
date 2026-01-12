@@ -3,6 +3,7 @@ import { body, validationResult } from 'express-validator';
 import Gig from '../models/Gig.js';
 import Bid from '../models/Bid.js';
 import { protect } from '../middleware/authMiddleware.js';
+import { getIO } from '../socket/socket.js';
 
 const router = express.Router();
 
@@ -35,6 +36,29 @@ router.get('/', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Server error fetching gigs'
+        });
+    }
+});
+
+// @route   GET /api/gigs/my-gigs
+// @desc    Get current user's gigs
+// @access  Private
+router.get('/my-gigs', protect, async (req, res) => {
+    try {
+        const gigs = await Gig.find({ owner: req.user._id })
+            .sort({ createdAt: -1 })
+            .lean();
+
+        res.json({
+            success: true,
+            count: gigs.length,
+            gigs
+        });
+    } catch (error) {
+        console.error('Get my gigs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error fetching your gigs'
         });
     }
 });
@@ -101,6 +125,12 @@ router.post('/', protect, [
         });
 
         const populatedGig = await Gig.findById(gig._id).populate('owner', 'name email');
+
+        // Broadcast new gig to all connected users
+        const io = getIO();
+        io.emit('new-gig', {
+            gig: populatedGig
+        });
 
         res.status(201).json({
             success: true,

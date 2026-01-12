@@ -77,6 +77,18 @@ router.post('/', protect, [
             .populate('freelancer', 'name email')
             .populate('gig', 'title');
 
+        // Emit real-time notification to gig owner
+        const io = getIO();
+        const ownerSocketId = getUserSocketId(gig.owner.toString());
+
+        if (ownerSocketId) {
+            io.to(ownerSocketId).emit('new-bid', {
+                bid: populatedBid,
+                gigId: gig._id,
+                message: `New bid from ${req.user.name} on "${gig.title}"`
+            });
+        }
+
         res.status(201).json({
             success: true,
             bid: populatedBid
