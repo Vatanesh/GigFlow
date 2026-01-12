@@ -8,6 +8,46 @@ import { getIO, getUserSocketId } from '../socket/socket.js';
 
 const router = express.Router();
 
+// @route   GET /api/bids/my-hired-jobs
+// @desc    Get all jobs where user was hired as freelancer
+// @access  Private
+router.get('/my-hired-jobs', protect, async (req, res) => {
+    try {
+        // Find all hired bids for this user
+        const hiredBids = await Bid.find({
+            freelancer: req.user._id,
+            status: 'hired'
+        })
+            .populate({
+                path: 'gig',
+                populate: {
+                    path: 'owner',
+                    select: 'name email'
+                }
+            })
+            .sort({ updatedAt: -1 });
+
+        // Extract gigs from bids
+        const hiredGigs = hiredBids.map(bid => ({
+            ...bid.gig.toObject(),
+            bidPrice: bid.price,
+            hiredDate: bid.updatedAt
+        }));
+
+        res.json({
+            success: true,
+            count: hiredGigs.length,
+            gigs: hiredGigs
+        });
+    } catch (error) {
+        console.error('Get hired jobs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error fetching hired jobs'
+        });
+    }
+});
+
 // @route   POST /api/bids
 // @desc    Submit a bid on a gig
 // @access  Private
