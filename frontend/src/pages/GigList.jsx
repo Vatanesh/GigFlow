@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
+import { getSocket } from '../utils/socket';
 
 export default function GigList() {
+    const location = useLocation();
     const [gigs, setGigs] = useState([]);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
@@ -26,7 +28,25 @@ export default function GigList() {
 
     useEffect(() => {
         fetchGigs();
-    }, [fetchGigs]);
+    }, [fetchGigs, location.state?.refresh]); // Refresh when location state changes
+
+    // Listen for real-time new gigs
+    useEffect(() => {
+        const socket = getSocket();
+        if (socket) {
+            const handleNewGig = (data) => {
+                toast.success(`New gig posted: "${data.gig.title}"`);
+                // Add new gig to the list
+                setGigs(prevGigs => [data.gig, ...prevGigs]);
+            };
+
+            socket.on('new-gig', handleNewGig);
+
+            return () => {
+                socket.off('new-gig', handleNewGig);
+            };
+        }
+    }, []); // Only set up once
 
     return (
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -67,7 +87,7 @@ export default function GigList() {
                     {gigs.map((gig) => (
                         <div key={gig._id} className="card group hover:scale-105">
                             <div className="flex items-start justify-between mb-4">
-                                <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                <h3 className="text-xl font-semibold text-gray-900 group-hover:text-green-700 transition-colors">
                                     {gig.title}
                                 </h3>
                                 <span className={`badge-${gig.status}`}>
@@ -79,7 +99,7 @@ export default function GigList() {
 
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-2xl font-bold text-blue-600">${gig.budget}</p>
+                                    <p className="text-2xl font-bold text-green-700">${gig.budget}</p>
                                     <p className="text-sm text-gray-500">Budget</p>
                                 </div>
                                 <Link

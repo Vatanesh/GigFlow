@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
+import { getSocket } from '../utils/socket';
 
 export default function GigDetail() {
     const { id } = useParams();
@@ -21,6 +22,25 @@ export default function GigDetail() {
     useEffect(() => {
         fetchGigDetails();
     }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Listen for real-time bid updates
+    useEffect(() => {
+        const socket = getSocket();
+        if (socket && user && gig && gig.owner._id === user.id) {
+            const handleNewBid = (data) => {
+                if (data.gigId === id) {
+                    toast.success(data.message);
+                    fetchBids(); // Refresh bids list
+                }
+            };
+
+            socket.on('new-bid', handleNewBid);
+
+            return () => {
+                socket.off('new-bid', handleNewBid);
+            };
+        }
+    }, [id, user, gig]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const fetchGigDetails = useCallback(async () => {
         try {
@@ -64,9 +84,10 @@ export default function GigDetail() {
             });
 
             if (data.success) {
-                toast.success('Bid submitted successfully!');
+                toast.success('Bid submitted successfully! Redirecting to home...');
                 setBidFormData({ message: '', price: '' });
-                navigate('/');
+                // Delay navigation to show success message
+                setTimeout(() => navigate('/'), 1500);
             }
         } catch (error) {
             const message = error.response?.data?.message || 'Failed to submit bid';
@@ -86,7 +107,9 @@ export default function GigDetail() {
 
             if (data.success) {
                 toast.success('Freelancer hired successfully!');
-                fetchGigDetails();
+                // Refetch both gig details and bids to show updated statuses
+                await fetchGigDetails();
+                await fetchBids();
             }
         } catch (error) {
             const message = error.response?.data?.message || 'Failed to hire freelancer';
@@ -114,7 +137,7 @@ export default function GigDetail() {
         <div className="max-w-7xl mx-auto px-4 py-8">
             <button
                 onClick={() => navigate('/')}
-                className="text-blue-600 hover:text-blue-700 mb-6 flex items-center gap-2"
+                className="text-green-700 hover:text-green-800 mb-6 flex items-center gap-2"
             >
                 ← Back to Gigs
             </button>
@@ -137,7 +160,7 @@ export default function GigDetail() {
 
                         <div className="flex items-center gap-6 pt-6 border-t border-gray-200">
                             <div>
-                                <p className="text-3xl font-bold text-blue-600">${gig.budget}</p>
+                                <p className="text-3xl font-bold text-green-700">${gig.budget}</p>
                                 <p className="text-sm text-gray-500">Budget</p>
                             </div>
                             <div>
@@ -227,7 +250,7 @@ export default function GigDetail() {
                                                 </span>
                                             </div>
 
-                                            <p className="text-2xl font-bold text-blue-600 mb-2">${bid.price}</p>
+                                            <p className="text-2xl font-bold text-green-700 mb-2">${bid.price}</p>
                                             <p className="text-sm text-gray-600 mb-3">{bid.message}</p>
 
                                             {bid.status === 'pending' && gig.status === 'open' && (

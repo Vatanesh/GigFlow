@@ -46,7 +46,7 @@ export default function Register() {
         <div className="min-h-screen flex items-center justify-center px-4 py-12">
             <div className="card max-w-md w-full">
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                    <h1 className="text-4xl font-bold bg-gradient-to-r from-green-700 to-lime-700 bg-clip-text text-transparent mb-2">
                         GigFlow
                     </h1>
                     <h2 className="text-2xl font-semibold text-gray-800">Create Account</h2>
@@ -98,10 +98,13 @@ export default function Register() {
                             value={formData.password}
                             onChange={handleChange}
                             required
-                            minLength={6}
+                            minLength={8}
                             className="input-field"
                             placeholder="••••••••"
                         />
+                        <p className="text-sm text-gray-500 mt-1">
+                            Must be at least 8 characters with uppercase, lowercase, and number
+                        </p>
                     </div>
 
                     <button
@@ -115,7 +118,7 @@ export default function Register() {
 
                 <p className="text-center mt-6 text-gray-600">
                     Already have an account?{' '}
-                    <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
+                    <Link to="/login" className="text-green-700 hover:text-green-800 font-semibold">
                         Log In
                     </Link>
                 </p>

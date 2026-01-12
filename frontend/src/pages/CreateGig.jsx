@@ -31,7 +31,8 @@ export default function CreateGig() {
 
             if (data.success) {
                 toast.success('Gig posted successfully!');
-                navigate('/');
+                // Navigate with state to trigger list refresh
+                navigate('/', { state: { refresh: true } });
             }
         } catch (error) {
             const message = error.response?.data?.message || 'Failed to create gig';

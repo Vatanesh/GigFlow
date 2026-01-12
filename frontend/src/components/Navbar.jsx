@@ -35,13 +35,13 @@ export default function Navbar() {
                     <div className="flex items-center gap-4">
                         {isAuthenticated ? (
                             <>
-                                <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">
+                                <Link to="/" className="text-gray-700 hover:text-green-700 font-medium transition-colors">
                                     Browse Gigs
                                 </Link>
-                                <Link to="/dashboard" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">
+                                <Link to="/dashboard" className="text-gray-700 hover:text-green-700 font-medium transition-colors">
                                     Dashboard
                                 </Link>
-                                <Link to="/create-gig" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">
+                                <Link to="/create-gig" className="text-gray-700 hover:text-green-700 font-medium transition-colors">
                                     Post Gig
                                 </Link>
                                 <div className="flex items-center gap-3 border-l border-gray-300 pl-4 ml-2">
@@ -56,7 +56,7 @@ export default function Navbar() {
                             </>
                         ) : (
                             <>
-                                <Link to="/login" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">
+                                <Link to="/login" className="text-gray-700 hover:text-green-700 font-medium transition-colors">
                                     Login
                                 </Link>
                                 <Link to="/register" className="btn-primary text-sm px-4 py-2">
